@@ -4,6 +4,7 @@ Before=wire_spooler.service
 
 [Service]
 Type=oneshot
+User=pi
 ExecStart=/home/pi/KotamechWireSpooler/update/update.sh
 RemainAfterExit=true
 
