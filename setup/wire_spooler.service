@@ -1,14 +1,12 @@
 [Unit]
 Description=Wire Spooler
-Wants=network-online.target
-After=network-online.target
 StartLimitInterval=300
 StartLimitBurst=20
 
 [Service]
 Type=idle
 Restart=always
-RestartSec=15
+RestartSec=5
 Environment="DISPLAY=:0"
 Environment="XAUTHORITY=/home/pi/.Xauthority"
 ExecStart=/usr/bin/python3 /home/pi/KotamechWireSpooler/program.py
