@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd /home/pi/KotamechWireSpooler
-git pull
+git pull origin master
