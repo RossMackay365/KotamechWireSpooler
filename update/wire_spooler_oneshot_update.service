@@ -1,6 +1,9 @@
 [Unit]
 Description=Wire Spooler Update Service
+Wants=network-online.target
 Before=wire_spooler.service
+After=network-online.target
+
 
 [Service]
 Type=oneshot
