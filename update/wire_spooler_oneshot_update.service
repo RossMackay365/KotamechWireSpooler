@@ -1,0 +1,10 @@
+[Unit]
+Description=Wire Spooler Update Service
+
+[Service]
+Type=oneshot
+ExecStart=/home/pi/KotamechWireSpooler/update/update.py
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

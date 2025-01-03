@@ -14,7 +14,7 @@ from signal import pause
 
 
 
-filepath = "params.txt"
+filepath = "/home/pi/KotamechWireSpooler/params.txt"
 run_text = "MACHINE RUNNING"
 stop_text = "MACHINE STOPPED"
 reset_text = "MACHINE RESETTING"

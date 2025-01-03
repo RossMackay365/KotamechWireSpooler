@@ -4,7 +4,7 @@ StartLimitInterval=300
 StartLimitBurst=20
 
 [Service]
-Type=idle
+Type=exec
 Restart=always
 RestartSec=5
 Environment="DISPLAY=:0"
