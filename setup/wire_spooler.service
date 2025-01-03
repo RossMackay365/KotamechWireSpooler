@@ -2,6 +2,7 @@
 Description=Wire Spooler
 StartLimitInterval=300
 StartLimitBurst=20
+After=wire_spooler_oneshot_update.service
 
 [Service]
 Type=exec

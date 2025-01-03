@@ -1,9 +1,10 @@
 [Unit]
 Description=Wire Spooler Update Service
+Before=wire_spooler.service
 
 [Service]
 Type=oneshot
-ExecStart=/home/pi/KotamechWireSpooler/update/update.py
+ExecStart=/home/pi/KotamechWireSpooler/update/update.sh
 RemainAfterExit=true
 
 [Install]
