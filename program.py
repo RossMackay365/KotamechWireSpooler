@@ -92,7 +92,7 @@ layout_pitch =      [[sg.Button('+', size=(10,2), key='pitch-UP')],
 user_layout = [[sg.VPush()],
           [sg.Frame("Wire Length", layout_length, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke Start", layout_x0, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Feed Length", layout_feed, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16))],
           [sg.VPush()],
-          [sg.Frame("Stroke Differential", layout_strokeDiff, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke End TEST", layout_strokeLen, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke Pitch", layout_pitch, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16))],
+          [sg.Frame("Stroke Differential", layout_strokeDiff, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke End", layout_strokeLen, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke Pitch", layout_pitch, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16))],
           [sg.VPush()],
           [sg.Push(), sg.Button('CONFIRM', size=(15,2), disabled=True), sg.Push()],
           [sg.VPush()]]
