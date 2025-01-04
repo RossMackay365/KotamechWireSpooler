@@ -14,6 +14,8 @@ filepath = "/home/pi/KotamechWireSpooler/params.txt"
 run_text = "MACHINE RUNNING"
 stop_text = "MACHINE STOPPED"
 reset_text = "MACHINE RESETTING"
+no_wire_text = "NO WIRE: RESETTING IN 5"
+stop_warning = "STOP BUTTON PRESSED"
 
 ### VALUE DEFINITIONS ###
 rotPerMil = 1.84 ## Number of Rotations to Move 1mm
@@ -90,11 +92,10 @@ user_layout = [[sg.VPush()],
           [sg.VPush()],
           [sg.Frame("Stroke Differential", layout_strokeDiff, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke End", layout_strokeLen, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke Pitch", layout_pitch, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16))],
           [sg.VPush()],
-          [sg.Push(), sg.Button('CONFIRM', size=(15,2), disabled=True), sg.Push()],
+          [sg.Text('', key='STOP-STATUS', size=(28, 1), font=('Calibri', 16)), sg.Button('CONFIRM', size=(15,2), disabled=True)],
           [sg.VPush()]]
 
-# , sg.Button('EXIT', size=(15,2)), sg.Push() ADD TO CONFIRM BUTTON LINE FOR EXIT BUTTON
-
+          # sg.Text('', key='-STATUS-', size=(50, 1), font=('Calibri', 16), text_color='red', justification='left')
 
 run_layout = [[sg.VPush()],
               [sg.Push(), sg.Text(run_text, font=('Calibri', 50), key='RUN-TEXT'), sg.Push()],
@@ -219,14 +220,27 @@ def initialButtonActivation():
 ### GPIO PIN OPERATION ###
 ## Display Functions
 
+def checkStopWarning():
+    if(stopButton.value == 1):
+        window['STOP-STATUS'].update(stop_warning)
+        window['STOP-STATUS'].update(text_color = 'white')
+    return
+
+# Stop Button Released - FOR STOP WARNING ONLY
+def stopButtonWarning():
+    window['STOP-STATUS'].update(text_color = 'white')
+    window['STOP-STATUS'].update('')
+    return
+
 # Stop Button Pressed
 def stopButtonPressed():
     # If not in run mode, do nothing
     if(current_window == window):
+        window['STOP-STATUS'].update(stop_warning)
         return
 
     # Update Warning on Run Page
-    run_window['RUN-TEXT'].update(stop_text)
+    run_window['RUN-TEXT'].update(no_wire_text)
 
     # Switching Steppers Off
     coil.off()
@@ -270,6 +284,7 @@ def resetButtonPressed():
     # Change Screen Back to Normal
     run_window['RUN-TEXT'].update(run_text)
     switchWindows(run_window, window)
+    checkStopWarning()
 
     return
 
@@ -280,7 +295,14 @@ def startButtonPressed():
     ### PRE-OPERATION CHECKS ###
     # If stop button is pressed, do not start
     if(stopButton.value == 1):
+        # Set Colour to Red
+        window['STOP-STATUS'].update(text_color = 'red')
         return
+    # If stop button not pressed, reset warnings
+    window['STOP-STATUS'].update(text_color = 'white')
+    window['STOP-STATUS'].update('')
+
+
     # If already in run mode, do nothing
     if(current_window == run_window):
         return
@@ -437,6 +459,7 @@ GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 ## Buttons
 stopButton = gp.Button(18, False)
 stopButton.when_pressed = stopButtonPressed
+stopButton.when_released = stopButtonWarning
 
 startButton = gp.Button(15, False)
 startButton.when_pressed = startButtonPressed
@@ -452,6 +475,9 @@ resetButton.when_pressed = resetButtonPressed
 
 
 ### ACTUAL PROGRAM OPERATION ###
+
+# Checking Stop Button for being pressed
+checkStopWarning()
 
 # Initialising Values & Button Status
 saved_values = readParamsFile(filepath)
