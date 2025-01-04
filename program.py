@@ -14,7 +14,7 @@ filepath = "/home/pi/KotamechWireSpooler/params.txt"
 run_text = "MACHINE RUNNING"
 stop_text = "MACHINE STOPPED"
 reset_text = "MACHINE RESETTING"
-no_wire_text = "NO WIRE: RESETTING IN 5"
+no_wire_text = "NO WIRE: RESETTING IN "
 stop_warning = "STOP BUTTON PRESSED"
 
 ### VALUE DEFINITIONS ###
@@ -221,9 +221,16 @@ def initialButtonActivation():
 ## Display Functions
 
 def checkStopWarning():
+    # If Button Pressed, Update
     if(stopButton.value == 1):
         window['STOP-STATUS'].update(stop_warning)
         window['STOP-STATUS'].update(text_color = 'white')
+        return
+    
+    # If Button Unpressed, Remove Warning
+    window['STOP-STATUS'].update('')
+    window['STOP-STATUS'].update(text_color = 'white')
+
     return
 
 # Stop Button Released - FOR STOP WARNING ONLY
@@ -240,7 +247,7 @@ def stopButtonPressed():
         return
 
     # Update Warning on Run Page
-    run_window['RUN-TEXT'].update(no_wire_text)
+    run_window['RUN-TEXT'].update(stop_text)
 
     # Switching Steppers Off
     coil.off()
@@ -273,8 +280,16 @@ def resetButtonPressed():
     
     # RESET MACHINE FUNCTIONALITY
     # Cut/Feed Wire
-    cutFeed(cutterSol, feedSol, feedMotor, feed_param)
+    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, feed_param)
     sleep(0.5)
+
+    ## THREAD ENDED DUE TO NO WIRE -> THROW WARNINGS
+    if(not feedSuccess):
+        for i in range(5):
+            run_window['RUN-TEXT'].update(no_wire_text + str(5-i))
+            sleep(1)
+        run_window['RUN-TEXT'].update(reset_text)
+
     # Return Home
     returnHome(homeSensor, sled, sledDirection)
 
@@ -284,8 +299,8 @@ def resetButtonPressed():
     # Change Screen Back to Normal
     run_window['RUN-TEXT'].update(run_text)
     switchWindows(run_window, window)
-    checkStopWarning()
 
+    checkStopWarning()
     return
 
 # Start Button Pressed
@@ -350,8 +365,9 @@ def startButtonPressed():
     passNum = 0
 
     # Starting Pulse Count Thread
+    threadSuccess = [True]
     target_pulses = calculateFeedSteps(length_param * 1000) # Conversion from m to mm
-    tachoThread = threading.Thread(target=pulseCountThread, args=(target_pulses,))
+    tachoThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadSuccess))
     tachoThread.start()
 
     coil.value = 0.5
@@ -402,6 +418,28 @@ def startButtonPressed():
             break
         passNum = passNum + 1
         sleep(0.1)
+
+    ## THREAD ENDED DUE TO NO WIRE -> THROW WARNINGS
+    if(not threadSuccess[0]):
+        # Turn Off Machines
+        coil.off()
+        sled.off()
+
+        # Display Resetting Text
+        for i in range(5):
+            run_window['RUN-TEXT'].update(no_wire_text + str(5-i))
+            sleep(1)
+        run_window['RUN-TEXT'].update(reset_text)
+
+        # Return Home
+        returnHome(homeSensor, sled, sledDirection)
+
+        # Change Screen Back to Normal
+        run_window['RUN-TEXT'].update(run_text)
+        switchWindows(run_window, window)
+
+        checkStopWarning()
+        return
 
     coil.off()
 
@@ -500,7 +538,7 @@ initialButtonActivation()
 
 while True:
     event, values = current_window.read()
-    ## Button Activation
+
     if event == 'length-UP':
         length_param += 1
         incrementValue(length_param, length_MIN, length_MAX, 'length')
@@ -542,9 +580,7 @@ while True:
         writeParamsFile(filepath)
         resetTextColor()
         window['CONFIRM'].update(disabled=True)
-
     
-    # This should be removed before final operation
     if event == 'EXIT':
         exit()
     if event == sg.WIN_CLOSED:

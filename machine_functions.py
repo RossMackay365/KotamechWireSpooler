@@ -1,5 +1,5 @@
 import gpiozero as gp
-from time import sleep
+from time import sleep, time
 import RPi.GPIO as GPIO
 import math
 import threading
@@ -7,20 +7,42 @@ import threading
 # This file contains only code related to the operation of the machine, NOT the user interface
 # All user-interface code is in program.py (working_version.py on computer)
 
+
+'''
+If there is no more wire, there will be no more spikes
+Count when nextRising is True, but GPIO.input(23) is low -> once count reaches threshold, do something
+
+The something:
+    SET FLAG -> PASS BACK TO PROGRAM FUNCTION THAT CALLED IT
+'''
+
 ## Thread for Counting Tachometer Pulses
-def pulseCountThread(target_pulses):
+def pulseCountThread(target_pulses, resultFlag):
 
     pulse_count = 0
     nextRising = True
+    timeout = time() + 2
     
     # Start polling for pulses
     while pulse_count < target_pulses:
-        if (nextRising == True and GPIO.input(23)):  # Check if the pulse pin is high (rising edge)
+        # If currently low, and input is high, increment count, set current to high
+        if (nextRising == True and GPIO.input(23)): 
             pulse_count += 1
             nextRising = False
+            continue
+        # If currently high, and input is low, set current to low, and reset timeout
         if (nextRising == False and not GPIO.input(23)):
             nextRising = True
+            timeout = time() + 2
+            continue
+        # If currently low, and input is still low, increment timeout_count
+        if (nextRising == True and not GPIO.input(23)):
+            # If reached threshold, set resultflag to false and return
+            if(timeout < time()):
+                resultFlag[0] = False
+                return
         
+    resultFlag[0] = True
     return    
 
 # Calculates the Required Sled Frequency to Achieve a certain mm per second
@@ -63,7 +85,8 @@ def cutFeed(cutterSol, feedSol, feedMotor, feed_param):
     sleep(0.5)
 
     # Starting Thread
-    feedThread = threading.Thread(target=pulseCountThread, args=(target_pulses,))
+    threadCompleted = [True]
+    feedThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadCompleted))
     feedThread.start()
 
     feedMotor.on()
@@ -74,7 +97,11 @@ def cutFeed(cutterSol, feedSol, feedMotor, feed_param):
     # Switch Machinery Off
     feedMotor.off()
     feedSol.off()
-    return
+
+    ## Return the value of ThreadCompleted
+        # If True - Thread Executed As Expected
+        # If False - No More Wire Warning Should be Thrown
+    return threadCompleted[0]
 
 
 # Start Home Procedure - Move Forward then Return Home
