@@ -7,15 +7,6 @@ import threading
 # This file contains only code related to the operation of the machine, NOT the user interface
 # All user-interface code is in program.py (working_version.py on computer)
 
-
-'''
-If there is no more wire, there will be no more spikes
-Count when nextRising is True, but GPIO.input(23) is low -> once count reaches threshold, do something
-
-The something:
-    SET FLAG -> PASS BACK TO PROGRAM FUNCTION THAT CALLED IT
-'''
-
 ## Thread for Counting Tachometer Pulses
 def pulseCountThread(target_pulses, resultFlag):
 
@@ -24,23 +15,25 @@ def pulseCountThread(target_pulses, resultFlag):
     timeout = time() + 2
     
     # Start polling for pulses
-    while pulse_count < target_pulses:
+    while (pulse_count < target_pulses):
+
+        current_time = time()
+
+        ## If Timeout -> Set Flag to False & Return
+        if(timeout < current_time):
+            resultFlag[0] = False
+            return
+
         # If currently low, and input is high, increment count, set current to high
         if (nextRising == True and GPIO.input(23)): 
             pulse_count += 1
             nextRising = False
-            continue
+            timeout = current_time + 2
+
         # If currently high, and input is low, set current to low, and reset timeout
-        if (nextRising == False and not GPIO.input(23)):
+        elif (nextRising == False and not GPIO.input(23)):
             nextRising = True
-            timeout = time() + 2
-            continue
-        # If currently low, and input is still low, increment timeout_count
-        if (nextRising == True and not GPIO.input(23)):
-            # If reached threshold, set resultflag to false and return
-            if(timeout < time()):
-                resultFlag[0] = False
-                return
+            timeout = current_time + 2
         
     resultFlag[0] = True
     return    

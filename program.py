@@ -456,11 +456,6 @@ def startButtonPressed():
     resetButtonPressed()
     return
 
-
-    
-
-
-
 ### Machine Initialising
 ## Stepper Motors - each stepper has three GPIO pins
     # Enable
