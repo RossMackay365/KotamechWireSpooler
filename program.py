@@ -6,10 +6,12 @@ from machine_functions import *
 from signal import pause
 
 #################################
-#             GIT PULL          #
+#                               #
+#      VALUE INITIALISATION     #
+#                               #
 #################################
 
-
+### TEXT STRINGS ###
 filepath = "/home/pi/KotamechWireSpooler/params.txt"
 run_text = "MACHINE RUNNING"
 stop_text = "MACHINE STOPPED"
@@ -19,10 +21,9 @@ stop_warning = "STOP BUTTON PRESSED"
 
 ### VALUE DEFINITIONS ###
 rotPerMil = 1.84 ## Number of Rotations to Move 1mm
-
 COIL_FREQUENCY = 1600
 
-# Maximum/Minimum Values
+### MIN/MAX VALUES ###
 length_MAX = 1000
 length_MIN = 1
 
@@ -42,7 +43,7 @@ pitch_MAX = 10
 pitch_MIN = 0.5
 
 
-# Parameter Values Displayed to User
+### PARAMETER VALUES ###
 length_param = 0
 feed_param = 0
 strokeLen_param = 0 # CALLED STROKE END FOR USER
@@ -50,7 +51,19 @@ x0_param = 0        # CALLED STROKE START FOR USER
 strokeDiff_param = 0
 pitch_param = 0
 
-# Layout Functionality
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+#################################
+#                               #
+#      USER INTERFACE SETUP     #
+#                               #
+#################################
+
+### LAYOUT CREATION ###
 layout_length =     [[sg.Button('+', size=(10,2), key='length-UP')],
                      [sg.VPush()],
                      [sg.Text(str(length_param) + "m", font=('Calibri',18), key='length')],
@@ -101,16 +114,28 @@ run_layout = [[sg.VPush()],
               [sg.Push(), sg.Text(run_text, font=('Calibri', 50), key='RUN-TEXT'), sg.Push()],
               [sg.VPush()]]
 
+### LAYOUT INITIALISATION
+# Creating WIndows
 window = sg.Window('Program', user_layout, size = (800,480), finalize = True)
 run_window = sg.Window('Program', run_layout, size = (800, 480), finalize = True)
 current_window = window
 run_window.Hide()
 window.Maximize()
+
+# Removing Cursor
 window.TKroot["cursor"] = "none"
 
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
 
 
-### FUNCTION DEFINITIONS ###
+
+
+#################################
+#                               #
+#    USER INTERFACE FUNCTIONS   #
+#                               #
+#################################
 
 ## Reading Values from File, and Setting Parameters Equal
 def readParamsFile(path):
@@ -129,7 +154,7 @@ def writeParamsFile(path):
     param_file.close()
 
 # Increments the Value of a User Parameter, & Displays On-Screen
-# Enables Decrement Button, Disables Increment Button if Needed
+    # Enables Decrement Button, Disables Increment Button if Needed
 def incrementValue(current_val, min_val, max_val, key):
     window['CONFIRM'].update(disabled=False)
     window[key].update(text_color = 'red')
@@ -165,6 +190,7 @@ def decrementValue(current_val, min_val, max_val, key):
         window[key].update(str(current_val) + "mm")
     return
 
+# Reset All Text Colors to White
 def resetTextColor():
     window['length'].update(text_color = 'white')
     window['feed'].update(text_color = 'white')
@@ -215,22 +241,29 @@ def initialButtonActivation():
         window['pitch-UP'].update(disabled=True)
     return
 
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
 
 
-### GPIO PIN OPERATION ###
-## Display Functions
 
+#################################
+#                               #
+#        BUTTON FUNCTIONS       #
+#                               #
+#################################
+
+# Thread for Checking the Stop Button after Reset Function is Called
 def threadedCheckStop():
     for i in range(100):
         checkStopWarning()
         sleep(0.1)
     return
 
+# Default Check Stop Warning Function -> If Pressed Display Warning, If Not Remove It
 def checkStopWarning():
     # If Button Pressed, Update
     if(stopButton.value == 1):
         window['STOP-STATUS'].update(stop_warning)
-        window['STOP-STATUS'].update(text_color = 'white')
         return
     
     # If Button Unpressed, Remove Warning
@@ -239,13 +272,16 @@ def checkStopWarning():
 
     return
 
-# Stop Button Released - FOR STOP WARNING ONLY
+# Default Stop Button Released Function
+    # Updates colour and removes text
 def stopButtonWarning():
     window['STOP-STATUS'].update(text_color = 'white')
     window['STOP-STATUS'].update('')
     return
 
-# Stop Button Pressed
+
+
+### STOP BUTTON PRESSED ###
 def stopButtonPressed():
     # If not in run mode, do nothing
     if(current_window == window):
@@ -272,7 +308,9 @@ def stopButtonPressed():
 
     return
 
-# Reset Button Pressed
+
+
+### RESET BUTTON PRESSED ###
 def resetButtonPressed():
     # If not in run mode, do nothing
     if(current_window == window):
@@ -310,7 +348,8 @@ def resetButtonPressed():
     stopWarningThread.start()
     return
 
-# Start Button Pressed
+
+### START BUTTON PRESSED
 def startButtonPressed():
     global x0_param, strokeLen_param, strokeDiff_param, length_param
 
@@ -456,47 +495,48 @@ def startButtonPressed():
     resetButtonPressed()
     return
 
-### Machine Initialising
-## Stepper Motors - each stepper has three GPIO pins
-    # Enable
-    # Direction
-    # Pull (i.e. Pulse Width Modulation Applied Here)
-    # Low = Enabled
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+#################################
+#                               #
+# MACHINE/BUTTON INITIALISATION #
+#                               #
+#################################
+
+### MACHINE INITIALISATION ###
+
+# Stepper Motors
 coilEnable = gp.OutputDevice(26, False)
+coilEnable.on()
 coilDirection = gp.OutputDevice(16, False)
+coilDirection.off()
 coil = gp.PWMOutputDevice(12)
 
-# High = Outwards, Low = Inwards
-# Initial Direction is Outwards
 sledEnable = gp.OutputDevice(6, False)
-## ON IS OUTWARDS, OFF IS INWARDS - THIS KEEPS SWITCHING FUCK ME
+sledEnable.on()
+## ON IS OUTWARDS, OFF IS INWARDS
 sledDirection = gp.DigitalOutputDevice(9, False)
 sled = gp.PWMOutputDevice(13)
-
-
-# Enabling Steppers
-coilEnable.on()
-sledEnable.on()
-
-coilDirection.off()
-
 
 # Home Sensor - 0 when home, 1 when not
 homeSensor = gp.InputDevice(8, False)
 
-
-## Feeder + Motor Devices
+# Feeder + Motor Devices
 feedMotor = gp.OutputDevice(22)
 feedSol = gp.OutputDevice(27)
 cutterSol = gp.OutputDevice(17)
-
 
 # Pulse Sensor Setup
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-### NON-MACHINE GPIO Pin Initialisation
-## Buttons
+
+
+### BUTTON INITIALISATION ###
 stopButton = gp.Button(18, False)
 stopButton.when_pressed = stopButtonPressed
 stopButton.when_released = stopButtonWarning
@@ -507,17 +547,18 @@ startButton.when_pressed = startButtonPressed
 resetButton = gp.Button(14, False)
 resetButton.when_pressed = resetButtonPressed
 
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
 
 
 
 
 
-
-
-### ACTUAL PROGRAM OPERATION ###
-
-# Checking Stop Button for being pressed
-checkStopWarning()
+#################################
+#                               #
+#       PROGRAM OPERATION       #
+#                               #
+#################################
 
 # Initialising Values & Button Status
 saved_values = readParamsFile(filepath)
@@ -534,9 +575,13 @@ window['strokeDiff'].update(str(strokeDiff_param) + "mm")
 pitch_param = float(saved_values[5])
 window['pitch'].update(str(pitch_param) + "mm")
 
-startHome(homeSensor, sled, sledDirection)
-initialButtonActivation()
 
+# Check Stop Button
+checkStopWarning()
+# Move Sled Home
+startHome(homeSensor, sled, sledDirection)
+# Setup All Buttons
+initialButtonActivation()
 
 while True:
     event, values = current_window.read()
@@ -582,10 +627,5 @@ while True:
         writeParamsFile(filepath)
         resetTextColor()
         window['CONFIRM'].update(disabled=True)
-    
-    if event == 'EXIT':
-        exit()
-    if event == sg.WIN_CLOSED:
-        break
 
 window.close()

@@ -4,10 +4,24 @@ import RPi.GPIO as GPIO
 import math
 import threading
 
+### IMPORTANT ###
 # This file contains only code related to the operation of the machine, NOT the user interface
-# All user-interface code is in program.py (working_version.py on computer)
+# All user-interface code is in program.py
 
-## Thread for Counting Tachometer Pulses
+
+#-----------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------#
+
+
+
+
+#################################
+#                               #
+#       MACHINE FUNCTIONS       #
+#                               #
+#################################
+
+## Thread Function for Counting Tachometer Pulses -> Timeout after 2 seconds if no change
 def pulseCountThread(target_pulses, resultFlag):
 
     pulse_count = 0
@@ -38,6 +52,8 @@ def pulseCountThread(target_pulses, resultFlag):
     resultFlag[0] = True
     return    
 
+
+
 # Calculates the Required Sled Frequency to Achieve a certain mm per second
 def calculateSledFreq(coilFrequency, pitch):
     rotationsPerSecond = coilFrequency / 400
@@ -56,11 +72,13 @@ def calculateSledTime(distance, frequency):
 
     return temp
 
+
 # Calculating Steps Required for Feeder Motor
 def calculateFeedSteps(feed_param):
     result = feed_param * 500
     result = result / (80 * math.pi)
     return round(result)
+
 
 # Cut, Feed & Return Home Function
 def cutFeed(cutterSol, feedSol, feedMotor, feed_param):
