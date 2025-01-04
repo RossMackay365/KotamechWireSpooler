@@ -220,6 +220,12 @@ def initialButtonActivation():
 ### GPIO PIN OPERATION ###
 ## Display Functions
 
+def threadedCheckStop():
+    for i in range(100):
+        checkStopWarning()
+        sleep(0.1)
+    return
+
 def checkStopWarning():
     # If Button Pressed, Update
     if(stopButton.value == 1):
@@ -300,7 +306,8 @@ def resetButtonPressed():
     run_window['RUN-TEXT'].update(run_text)
     switchWindows(run_window, window)
 
-    checkStopWarning()
+    stopWarningThread = threading.Thread(target=threadedCheckStop)
+    stopWarningThread.start()
     return
 
 # Start Button Pressed
