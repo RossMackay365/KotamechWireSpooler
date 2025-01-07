@@ -41,5 +41,5 @@ def git_pull():
 if(is_connected()):
     git_pull()
 else:
-    sleep(10)
+    sleep(20)
     git_pull()
