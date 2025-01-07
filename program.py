@@ -328,7 +328,7 @@ def resetButtonPressed():
     
     # RESET MACHINE FUNCTIONALITY
     # Cut/Feed Wire
-    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, feed_param)
+    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, 35, stopButton)
     sleep(0.5)
 
     ## THREAD ENDED DUE TO NO WIRE -> THROW WARNINGS
@@ -387,9 +387,9 @@ def startButtonPressed():
     sleep(0.5)
 
     # Move to Initial Position
-    initialTime = calculateSledTime(x0_param, 100)
+    initialTime = calculateSledTime(x0_param, 800)
     sled.value = 0.5
-    sled.frequency = 100
+    sled.frequency = 800
     sledDirection.on()
 
     initialStart = time()
@@ -481,6 +481,12 @@ def startButtonPressed():
             sleep(1)
         run_window['RUN-TEXT'].update(reset_text)
 
+        # Cutting Wire
+        cutterSol.on()
+        sleep(0.5)
+        cutterSol.off()
+        sleep(0.5)
+
         # Return Home
         returnHome(homeSensor, sled, sledDirection)
 
@@ -495,8 +501,37 @@ def startButtonPressed():
 
     sleep(1)
 
-    # Cut / Feed / Reset Process
-    resetButtonPressed()
+    # Cut / Feed / Reset Process - MANUAL RESET PROCEDURE
+    # Setting Page to Reset Text
+    run_window['RUN-TEXT'].update(reset_text)
+    # Switching Coil Off
+    coil.off()
+    sled.off()
+    
+    # RESET MACHINE FUNCTIONALITY
+    # Cut/Feed Wire
+    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, feed_param, stopButton)
+    sleep(0.5)
+
+    ## THREAD ENDED DUE TO NO WIRE -> THROW WARNINGS
+    if(not feedSuccess):
+        for i in range(5):
+            run_window['RUN-TEXT'].update(no_wire_text + str(5-i))
+            sleep(1)
+        run_window['RUN-TEXT'].update(reset_text)
+
+    # Return Home
+    returnHome(homeSensor, sled, sledDirection)
+
+    coil.off()
+    sled.off()
+
+    # Change Screen Back to Normal
+    run_window['RUN-TEXT'].update(run_text)
+    switchWindows(run_window, window)
+
+    stopWarningThread = threading.Thread(target=threadedCheckStop)
+    stopWarningThread.start()
     return
 
 #-----------------------------------------------------------------------------------------------------------------------------#
@@ -574,7 +609,7 @@ strokeLen_param = int(saved_values[2])
 window['strokeLen'].update(str(strokeLen_param) + "mm")
 x0_param = int(saved_values[3])
 window['x0'].update(str(x0_param) + "mm")
-strokeDiff_param = int(saved_values[4])
+strokeDiff_param = float(saved_values[4])
 window['strokeDiff'].update(str(strokeDiff_param) + "mm")
 pitch_param = float(saved_values[5])
 window['pitch'].update(str(pitch_param) + "mm")
