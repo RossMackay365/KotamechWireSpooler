@@ -26,8 +26,7 @@ def pulseCountThread(target_pulses, resultFlag, stopButton):
 
     pulse_count = 0
     nextRising = True
-    timeout = time() + 3
-    stopPressed = False
+    timeout = time() + 2
     
     # Start polling for pulses
     while (pulse_count < target_pulses):
@@ -35,7 +34,7 @@ def pulseCountThread(target_pulses, resultFlag, stopButton):
         if(stopButton.is_pressed):
             while(stopButton.is_pressed):
                 sleep(0.001)
-            timeout = time() + 3
+            timeout = time() + 2
         
         current_time = time()
 
@@ -62,7 +61,7 @@ def pulseCountThread(target_pulses, resultFlag, stopButton):
 
 # Calculates the Required Sled Frequency to Achieve a certain mm per second
 def calculateSledFreq(coilFrequency, pitch):
-    rotationsPerSecond = coilFrequency / 400
+    rotationsPerSecond = coilFrequency / 50
 
     result = rotationsPerSecond * pitch * 1.84
 
@@ -72,7 +71,7 @@ def calculateSledFreq(coilFrequency, pitch):
 # Calculates the Required Sled Time to Cover a Certain Distance
 # NOTE: Distance given in mm
 def calculateSledTime(distance, frequency):
-    temp = distance * 1.84
+    temp = distance * 1.84 * 8
 
     temp = temp / frequency
 
@@ -99,7 +98,6 @@ def cutFeed(cutterSol, feedSol, feedMotor, feed_param, stopButton):
 
     # Turning Feed Solenoid + Motor On
     feedSol.on()
-    sleep(0.5)
 
     # Starting Thread
     threadCompleted = [True]
@@ -128,7 +126,7 @@ def startHome(homeSensor, sled, sledDirection):
     
     # Adjusting for possible 'Negative Position'
     sled.value = 0.5
-    sled.frequency = 100
+    sled.frequency = 800
     sledDirection.on()
     sleep(0.5)
     sled.off()
@@ -148,7 +146,7 @@ def returnHome(homeSensor, sled, sledDirection):
     
     # Set Sled Direction to Inwards + Frequency to 100
     sledDirection.off()
-    sled.frequency = 100
+    sled.frequency = 800
     sled.value = 0.5
 
     while(homeSensor.value != 0):
