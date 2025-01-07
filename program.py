@@ -40,7 +40,7 @@ strokeDiff_MAX = 60
 strokeDiff_MIN = 0
 
 pitch_MAX = 10
-pitch_MIN = 0.5
+pitch_MIN = 1
 
 
 ### PARAMETER VALUES ###
@@ -283,6 +283,10 @@ def stopButtonWarning():
 
 ### STOP BUTTON PRESSED ###
 def stopButtonPressed():
+
+    if(resetButton.is_pressed):
+        return
+
     # If not in run mode, do nothing
     if(current_window == window):
         window['STOP-STATUS'].update(stop_warning)
@@ -348,10 +352,10 @@ def resetButtonPressed():
     stopWarningThread.start()
     return
 
-
+                 
 ### START BUTTON PRESSED
 def startButtonPressed():
-    global x0_param, strokeLen_param, strokeDiff_param, length_param
+    global x0_param, strokeLen_param, strokeDiff_param, length_param, stopButton
 
     ### PRE-OPERATION CHECKS ###
     # If stop button is pressed, do not start
@@ -413,7 +417,7 @@ def startButtonPressed():
     # Starting Pulse Count Thread
     threadSuccess = [True]
     target_pulses = calculateFeedSteps(length_param * 1000) # Conversion from m to mm
-    tachoThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadSuccess))
+    tachoThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadSuccess, stopButton))
     tachoThread.start()
 
     coil.value = 0.5
@@ -599,10 +603,10 @@ while True:
         strokeLen_param -= 1
         decrementValue(strokeLen_param, strokeLen_MIN, strokeLen_MAX, 'strokeLen')
     if event == 'strokeDiff-UP':
-        strokeDiff_param += 1
+        strokeDiff_param += 0.5
         incrementValue(strokeDiff_param, strokeDiff_MIN, strokeDiff_MAX, 'strokeDiff')
     if event == 'strokeDiff-DOWN':
-        strokeDiff_param -= 1
+        strokeDiff_param -= 0.5
         decrementValue(strokeDiff_param, strokeDiff_MIN, strokeDiff_MAX, 'strokeDiff')
     if event == 'feed-UP':
         feed_param += 1

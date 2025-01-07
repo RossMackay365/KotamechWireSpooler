@@ -22,15 +22,21 @@ import threading
 #################################
 
 ## Thread Function for Counting Tachometer Pulses -> Timeout after 2 seconds if no change
-def pulseCountThread(target_pulses, resultFlag):
+def pulseCountThread(target_pulses, resultFlag, stopButton):
 
     pulse_count = 0
     nextRising = True
-    timeout = time() + 2
+    timeout = time() + 3
+    stopPressed = False
     
     # Start polling for pulses
     while (pulse_count < target_pulses):
 
+        if(stopButton.is_pressed):
+            while(stopButton.is_pressed):
+                sleep(0.001)
+            timeout = time() + 3
+        
         current_time = time()
 
         ## If Timeout -> Set Flag to False & Return
@@ -81,7 +87,7 @@ def calculateFeedSteps(feed_param):
 
 
 # Cut, Feed & Return Home Function
-def cutFeed(cutterSol, feedSol, feedMotor, feed_param):
+def cutFeed(cutterSol, feedSol, feedMotor, feed_param, stopButton):
     # Initialising Counters/Target
     target_pulses = calculateFeedSteps(feed_param * 10)
     
@@ -97,7 +103,7 @@ def cutFeed(cutterSol, feedSol, feedMotor, feed_param):
 
     # Starting Thread
     threadCompleted = [True]
-    feedThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadCompleted))
+    feedThread = threading.Thread(target=pulseCountThread, args=(target_pulses, threadCompleted, stopButton))
     feedThread.start()
 
     feedMotor.on()
