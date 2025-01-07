@@ -171,7 +171,6 @@ def incrementValue(current_val, min_val, max_val, key):
         window[key].update(str(current_val) + "mm")
     return
 
-
 # Decrements the Value of a User Parameter, & Displays On-Screen
 # Enables Increment Button, Disables Decrement Button if Needed
 def decrementValue(current_val, min_val, max_val, key):
