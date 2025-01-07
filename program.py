@@ -105,7 +105,7 @@ user_layout = [[sg.VPush()],
           [sg.VPush()],
           [sg.Frame("Stroke Differential", layout_strokeDiff, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke End", layout_strokeLen, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16)), sg.Push(), sg.Frame("Stroke Pitch", layout_pitch, size=(200, 180), element_justification='center', vertical_alignment='center', font = ('Calibri', 16))],
           [sg.VPush()],
-          [sg.Text('', key='STOP-STATUS', size=(28, 1), font=('Calibri', 16)), sg.Button('TEST', size=(15,2), disabled=True)],
+          [sg.Text('', key='STOP-STATUS', size=(28, 1), font=('Calibri', 16)), sg.Button('CONFIRM', size=(15,2), disabled=True)],
           [sg.VPush()]]
 
           # sg.Text('', key='-STATUS-', size=(50, 1), font=('Calibri', 16), text_color='red', justification='left')
