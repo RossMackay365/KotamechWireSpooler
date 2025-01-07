@@ -327,7 +327,7 @@ def resetButtonPressed():
     
     # RESET MACHINE FUNCTIONALITY
     # Cut/Feed Wire
-    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, 35, stopButton)
+    feedSuccess = cutFeed(cutterSol, feedSol, feedMotor, 25, stopButton)
     sleep(0.5)
 
     ## THREAD ENDED DUE TO NO WIRE -> THROW WARNINGS
