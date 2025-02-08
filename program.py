@@ -20,7 +20,6 @@ no_wire_text = "NO WIRE: RESETTING IN "
 stop_warning = "STOP BUTTON PRESSED"
 
 ### VALUE DEFINITIONS ###
-rotPerMil = 1.84 ## Number of Rotations to Move 1mm
 COIL_FREQUENCY = 1600
 
 ### MIN/MAX VALUES ###

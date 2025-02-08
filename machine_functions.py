@@ -80,7 +80,7 @@ def calculateSledTime(distance, frequency):
 
 # Calculating Steps Required for Feeder Motor
 def calculateFeedSteps(feed_param):
-    result = feed_param * 500
+    result = feed_param * 50
     result = result / (80 * math.pi)
     return round(result)
 
